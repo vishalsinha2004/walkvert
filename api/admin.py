@@ -1,5 +1,9 @@
 from django.contrib import admin
-from .models import Client, Campaign, PerformanceMetric
+from .models import Client, Campaign, PerformanceMetric, CampaignArea
+
+class CampaignAreaInline(admin.TabularInline):
+    model = CampaignArea
+    extra = 1
 
 @admin.register(Client)
 class ClientAdmin(admin.ModelAdmin):
@@ -8,9 +12,10 @@ class ClientAdmin(admin.ModelAdmin):
 
 @admin.register(Campaign)
 class CampaignAdmin(admin.ModelAdmin):
-    list_display = ('title', 'client', 'status', 'start_date', 'end_date')
+    list_display = ('advertisement_title', 'client', 'quantity_of_pieces', 'total_days', 'status', 'start_date', 'end_date')
     list_filter = ('status', 'client')
-    search_fields = ('title', 'client__company_name')
+    search_fields = ('advertisement_title', 'client__company_name')
+    inlines = [CampaignAreaInline]
 
 @admin.register(PerformanceMetric)
 class PerformanceMetricAdmin(admin.ModelAdmin):

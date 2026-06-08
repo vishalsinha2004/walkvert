@@ -5,7 +5,6 @@ from django.utils import timezone
 from datetime import timedelta
 
 class Client(models.Model):
-        # Linking to Django's built-in User model handles authentication seamlessly
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='client_profile')
     company_name = models.CharField(max_length=255)
     contact_phone = models.CharField(max_length=20, blank=True)
@@ -23,18 +22,28 @@ class Campaign(models.Model):
     ]
 
     client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='campaigns')
-    title = models.CharField(max_length=255)
+    advertisement_title = models.CharField(max_length=255, null=True, blank=True)
     description = models.TextField(blank=True)
     start_date = models.DateField()
     end_date = models.DateField()
+    
+    total_days = models.PositiveIntegerField(help_text="Total number of days the ad will run", default=0)
+    quantity_of_pieces = models.PositiveIntegerField(help_text="Total quantity of pieces/units", default=0)
+    
     budget = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
-    
-    # Where the ad is running (e.g., "Billboard A", "Digital Screen B")
     placement_locations = models.CharField(max_length=500, help_text="Comma separated locations")
 
     def __str__(self):
-        return f"{self.title} ({self.client.company_name})"
+        return f"{self.advertisement_title} ({self.client.company_name})"
+
+class CampaignArea(models.Model):
+    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE, related_name='areas')
+    area_name = models.CharField(max_length=100)
+    percentage = models.PositiveIntegerField(help_text="Enter percentage (e.g., 40 for 40%)")
+
+    def __str__(self):
+        return f"{self.area_name} ({self.percentage}%) - {self.campaign.advertisement_title}"
 
 class PerformanceMetric(models.Model):
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE, related_name='metrics')
@@ -45,13 +54,10 @@ class PerformanceMetric(models.Model):
     last_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
-        # Ensures only one metric entry per campaign per day
         unique_together = ['campaign', 'date']
 
     def __str__(self):
-        return f"{self.campaign.title} - {self.date}"
-    
-
+        return f"{self.campaign.advertisement_title} - {self.date}"
 
 class EmailOTP(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -59,12 +65,10 @@ class EmailOTP(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def generate_new_otp(self):
-        # Generate a random 6-digit string
         self.otp_code = str(random.randint(100000, 999999))
         self.created_at = timezone.now()
         self.save()
         return self.otp_code
 
     def is_valid(self):
-        # Enforce a 10-minute expiration window
         return timezone.now() <= self.created_at + timedelta(minutes=10)
