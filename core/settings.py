@@ -134,7 +134,9 @@ SIMPLE_JWT = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173", # Vite local development port
 ]
-
+CSRF_TRUSTED_ORIGINS = [
+    "https://walkvert.onrender.com", # Allows you to log into the live Admin panel
+]
 
 # ==============================================================================
 # INTEGRATIONS & THIRD-PARTY APIs
