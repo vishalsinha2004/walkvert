@@ -133,6 +133,7 @@ SIMPLE_JWT = {
 # Cross-Origin Resource Sharing settings
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173", # Vite local development port
+    "https://walkvert.netlify.app",
 ]
 CSRF_TRUSTED_ORIGINS = [
     "https://walkvert.onrender.com", # Allows you to log into the live Admin panel
