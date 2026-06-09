@@ -33,6 +33,19 @@ class ClientSerializer(serializers.ModelSerializer):
 
 
 class ServiceItemSerializer(serializers.ModelSerializer):
+    # Add this line to handle the image URL properly
+    icon_url = serializers.SerializerMethodField()
+
     class Meta:
         model = ServiceItem
-        fields = ['id', 'name', 'icon', 'is_coming_soon']
+        # Use 'icon_url' instead of just 'icon'
+        fields = ['id', 'name', 'icon_url', 'is_coming_soon']
+
+    def get_icon_url(self, obj):
+        if obj.icon:
+            # This builds the full URL, e.g., http://localhost:8000/media/...
+            request = self.context.get('request')
+            if request is not None:
+                return request.build_absolute_uri(obj.icon.url)
+            return obj.icon.url
+        return None
