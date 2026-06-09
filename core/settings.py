@@ -155,7 +155,9 @@ AWS_S3_FILE_OVERWRITE = False
 
 # Safely check if we have Supabase keys before applying S3 settings
 if AWS_S3_ENDPOINT_URL:
-    AWS_S3_CUSTOM_DOMAIN = f"{AWS_S3_ENDPOINT_URL.replace('https://', '')}/{AWS_STORAGE_BUCKET_NAME}"
+    # THE FIX: We swap '/s3' for '/object/public' so React gets the readable public URL!
+    frontend_domain = AWS_S3_ENDPOINT_URL.replace('https://', '').replace('/s3', '/object/public')
+    AWS_S3_CUSTOM_DOMAIN = f"{frontend_domain}/{AWS_STORAGE_BUCKET_NAME}"
     
     STORAGES = {
         "default": {
