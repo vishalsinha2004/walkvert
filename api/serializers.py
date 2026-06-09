@@ -19,7 +19,7 @@ class CampaignSerializer(serializers.ModelSerializer):
         model = Campaign
         fields = [
             'id', 'advertisement_title', 'description', 'start_date', 'end_date', 
-            'total_days', 'quantity_of_pieces', 'budget', 'status', 
+            'total_days', 'quantity_of_pieces', 'total_amount', 'budget', 'status', 
             'placement_locations', 'metrics', 'areas'
         ]
 

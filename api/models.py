@@ -30,6 +30,9 @@ class Campaign(models.Model):
     total_days = models.PositiveIntegerField(help_text="Total number of days the ad will run", default=0)
     quantity_of_pieces = models.PositiveIntegerField(help_text="Total quantity of pieces/units", default=0)
     
+    # NEW FIELD ADDED HERE:
+    total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00, help_text="Total cost/amount for the campaign")
+    
     budget = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
     placement_locations = models.CharField(max_length=500, help_text="Comma separated locations")
