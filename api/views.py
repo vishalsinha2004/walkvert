@@ -7,8 +7,8 @@ from django.contrib.auth.models import User
 from rest_framework_simplejwt.tokens import RefreshToken
 
 # Ensure EmailOTP is imported from your models
-from .models import Client, Campaign, EmailOTP
-from .serializers import ClientSerializer, CampaignSerializer
+from .models import Client, Campaign, EmailOTP, ServiceItem
+from .serializers import ClientSerializer, CampaignSerializer, ServiceItemSerializer
 from django.conf import settings
 
 # ==========================================
@@ -146,3 +146,8 @@ class VerifyOTPView(APIView):
             'refresh': str(refresh),
             'message': 'Account verified successfully.'
         }, status=status.HTTP_200_OK)
+    
+class ServiceItemViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = ServiceItem.objects.all().order_by('-created_at')
+    serializer_class = ServiceItemSerializer
+    permission_classes = [permissions.IsAuthenticated]

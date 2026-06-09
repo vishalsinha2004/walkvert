@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Client, Campaign, PerformanceMetric, CampaignArea
+from .models import Client, Campaign, PerformanceMetric, CampaignArea, ServiceItem
 
 class CampaignAreaInline(admin.TabularInline):
     model = CampaignArea
@@ -22,3 +22,9 @@ class PerformanceMetricAdmin(admin.ModelAdmin):
     list_display = ('campaign', 'date', 'impressions', 'clicks_or_interactions')
     list_filter = ('campaign', 'date')
     date_hierarchy = 'date'
+
+@admin.register(ServiceItem)
+class ServiceItemAdmin(admin.ModelAdmin):
+    list_display = ('name', 'is_coming_soon', 'created_at')
+    list_filter = ('is_coming_soon',)
+    search_fields = ('name',)

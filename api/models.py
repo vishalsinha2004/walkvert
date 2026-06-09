@@ -75,3 +75,12 @@ class EmailOTP(models.Model):
 
     def is_valid(self):
         return timezone.now() <= self.created_at + timedelta(minutes=10)
+    
+class ServiceItem(models.Model):
+    name = models.CharField(max_length=255, help_text="e.g., Plastic Bags, Paper Glass")
+    icon = models.ImageField(upload_to='services/icons/', blank=True, null=True)
+    is_coming_soon = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name

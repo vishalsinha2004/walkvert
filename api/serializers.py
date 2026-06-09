@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Client, Campaign, PerformanceMetric, CampaignArea
+from .models import Client, Campaign, PerformanceMetric, CampaignArea, ServiceItem
 
 class PerformanceMetricSerializer(serializers.ModelSerializer):
     class Meta:
@@ -25,7 +25,14 @@ class CampaignSerializer(serializers.ModelSerializer):
 
 class ClientSerializer(serializers.ModelSerializer):
     campaigns = CampaignSerializer(many=True, read_only=True)
+    email = serializers.EmailField(source='user.email', read_only=True)
 
     class Meta:
         model = Client
-        fields = ['id', 'company_name', 'contact_phone', 'campaigns']
+        fields = ['id', 'company_name', 'email', 'contact_phone', 'campaigns']
+
+
+class ServiceItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServiceItem
+        fields = ['id', 'name', 'icon', 'is_coming_soon']

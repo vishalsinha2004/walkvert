@@ -1,11 +1,12 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from .views import ClientDashboardViewSet, CampaignViewSet, RegisterClientView, VerifyOTPView
+from .views import ClientDashboardViewSet, CampaignViewSet, RegisterClientView, VerifyOTPView, ServiceItemViewSet
 
 router = DefaultRouter()
 router.register(r'dashboard', ClientDashboardViewSet, basename='dashboard')
 router.register(r'campaigns', CampaignViewSet, basename='campaign')
+router.register(r'services', ServiceItemViewSet, basename='service'),
 
 urlpatterns = [
     # Auth & Registration
@@ -13,7 +14,6 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('register/', RegisterClientView.as_view(), name='register'),
     path('verify-otp/', VerifyOTPView.as_view(), name='verify_otp'),
-    
     # Core app routes
     path('', include(router.urls)),
 ]
