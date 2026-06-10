@@ -150,4 +150,4 @@ class VerifyOTPView(APIView):
 class ServiceItemViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ServiceItem.objects.all().order_by('-created_at')
     serializer_class = ServiceItemSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
