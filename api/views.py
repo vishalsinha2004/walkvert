@@ -5,11 +5,16 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth.models import User
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.conf import settings
+
+# --- NEW GOOGLE IMPORTS ---
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
 
 # Ensure EmailOTP is imported from your models
 from .models import Client, Campaign, EmailOTP, ServiceItem
 from .serializers import ClientSerializer, CampaignSerializer, ServiceItemSerializer
-from django.conf import settings
+
 
 # ==========================================
 # CLIENT DASHBOARD VIEWS (Read-Only)
@@ -95,7 +100,6 @@ class RegisterClientView(APIView):
         }
 
         # Fire the request to Brevo
-        # Fire the request to Brevo
         try:
             response = requests.post(url, json=payload, headers=headers)
             response.raise_for_status() 
@@ -151,3 +155,56 @@ class ServiceItemViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ServiceItem.objects.all().order_by('-created_at')
     serializer_class = ServiceItemSerializer
     permission_classes = [permissions.AllowAny]
+
+
+# ==========================================
+# GOOGLE AUTHENTICATION VIEW
+# ==========================================
+
+class GoogleLoginView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        token = request.data.get('credential')
+        if not token:
+            return Response({'error': 'No credential provided.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Verify the token with Google
+            idinfo = id_token.verify_oauth2_token(
+                token, 
+                google_requests.Request(), 
+                getattr(settings, 'GOOGLE_CLIENT_ID', '')
+            )
+
+            email = idinfo['email']
+            name = idinfo.get('name', email.split('@')[0])
+
+            # Check if user exists
+            user = User.objects.filter(username=email).first()
+            
+            if not user:
+                # If it's a new user (Sign Up), create User and Client profile
+                user = User.objects.create_user(username=email, email=email)
+                user.is_active = True  # Google verified the email automatically
+                user.save()
+                
+                # Create Client profile using their Google name as company_name
+                Client.objects.create(user=user, company_name=f"{name}'s Company")
+            
+            # If user exists but is inactive (e.g. abandoned standard signup), activate them
+            if not user.is_active:
+                user.is_active = True
+                user.save()
+
+            # Generate your app's JWT tokens
+            refresh = RefreshToken.for_user(user)
+
+            return Response({
+                'access': str(refresh.access_token),
+                'refresh': str(refresh),
+                'message': 'Google authentication successful.'
+            }, status=status.HTTP_200_OK)
+
+        except ValueError:
+            return Response({'error': 'Invalid Google token.'}, status=status.HTTP_400_BAD_REQUEST)
