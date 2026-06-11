@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Client, Campaign, PerformanceMetric, CampaignArea, ServiceItem
+from .models import Client, Campaign, PerformanceMetric, CampaignArea, ServiceItem, Booking
 
 class PerformanceMetricSerializer(serializers.ModelSerializer):
     class Meta:
@@ -47,3 +47,9 @@ class ServiceItemSerializer(serializers.ModelSerializer):
                 return request.build_absolute_uri(obj.icon.url)
             return obj.icon.url
         return None
+    
+
+class BookingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Booking
+        fields = ['name', 'phone', 'requirement', ]

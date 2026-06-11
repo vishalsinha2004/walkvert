@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 import random
 from django.utils import timezone
 from datetime import timedelta
-
+from django.contrib.auth import get_user_model
 class Client(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='client_profile')
     company_name = models.CharField(max_length=255)
@@ -84,3 +84,15 @@ class ServiceItem(models.Model):
 
     def __str__(self):
         return self.name
+    
+    User = get_user_model()
+class Booking(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bookings')
+    service = models.ForeignKey('ServiceItem', on_delete=models.CASCADE, related_name='bookings')
+    name = models.CharField(max_length=255)
+    phone = models.CharField(max_length=20)
+    requirement = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Order #{self.id} - {self.name}"

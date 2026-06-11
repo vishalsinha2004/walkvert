@@ -11,9 +11,12 @@ from django.conf import settings
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 
-# Ensure EmailOTP is imported from your models
-from .models import Client, Campaign, EmailOTP, ServiceItem
-from .serializers import ClientSerializer, CampaignSerializer, ServiceItemSerializer
+# 🌟 UPDATED: Import the action decorator
+from rest_framework.decorators import action
+
+# 🌟 UPDATED: Ensure Booking and BookingSerializer are imported
+from .models import Client, Campaign, EmailOTP, ServiceItem, Booking
+from .serializers import ClientSerializer, CampaignSerializer, ServiceItemSerializer, BookingSerializer
 
 
 # ==========================================
@@ -150,11 +153,38 @@ class VerifyOTPView(APIView):
             'refresh': str(refresh),
             'message': 'Account verified successfully.'
         }, status=status.HTTP_200_OK)
-    
+
+
+# ==========================================
+# SERVICE ITEMS & BOOKING VIEW
+# ==========================================
+
 class ServiceItemViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ServiceItem.objects.all().order_by('-created_at')
     serializer_class = ServiceItemSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.AllowAny] # Anyone can see the list of services
+
+    # 🌟 NEW: Custom action for booking a specific service
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
+    def book(self, request, pk=None):
+        service = self.get_object() # Gets the specific service from the URL ID
+        serializer = BookingSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            # Save the booking. request.user automatically provides the email.
+            booking = serializer.save(user=request.user, service=service)
+            
+            # Fetch the authenticated user's email
+            user_email = request.user.email
+            
+            # Optional: Here you can integrate Brevo to send an email notification to the Admin
+            
+            return Response({
+                "message": "Booking successfully placed!",
+                "user_email": user_email
+            }, status=status.HTTP_201_CREATED)
+            
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # ==========================================
@@ -175,8 +205,7 @@ class GoogleLoginView(APIView):
                 token, 
                 google_requests.Request(), 
                 getattr(settings, 'GOOGLE_CLIENT_ID', ''),
-                clock_skew_in_seconds=10 # 🌟 ADD THIS LINE: Allows up to 10 seconds of clock difference!
-                
+                clock_skew_in_seconds=10 # Allows up to 10 seconds of clock difference!
             )
 
             email = idinfo['email']
