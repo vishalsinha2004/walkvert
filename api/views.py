@@ -174,7 +174,9 @@ class GoogleLoginView(APIView):
             idinfo = id_token.verify_oauth2_token(
                 token, 
                 google_requests.Request(), 
-                getattr(settings, 'GOOGLE_CLIENT_ID', '')
+                getattr(settings, 'GOOGLE_CLIENT_ID', ''),
+                clock_skew_in_seconds=10 # 🌟 ADD THIS LINE: Allows up to 10 seconds of clock difference!
+                
             )
 
             email = idinfo['email']
@@ -206,5 +208,7 @@ class GoogleLoginView(APIView):
                 'message': 'Google authentication successful.'
             }, status=status.HTTP_200_OK)
 
-        except ValueError:
+        except ValueError as e:
+            # THIS WILL PRINT THE EXACT REASON IN YOUR PYTHON TERMINAL
+            print(f"GOOGLE VERIFICATION FAILED: {e}") 
             return Response({'error': 'Invalid Google token.'}, status=status.HTTP_400_BAD_REQUEST)
